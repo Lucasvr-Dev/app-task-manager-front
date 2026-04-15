@@ -53,7 +53,7 @@ petForm.addEventListener('submit', async (e) => {
       body: JSON.stringify(data)
     });
 
-    alert('Pet criado com sucesso 🐶');
+    alert('Pet criado com sucesso');
 
     petForm.reset();
     loadPets();
@@ -122,7 +122,7 @@ entryForm.addEventListener('submit', async (e) => {
       body: JSON.stringify(data)
     });
 
-    alert(currentEntryId ? 'Registro atualizado ✏️' : 'Registro criado 📘');
+    alert(currentEntryId ? 'Registro atualizado ' : 'Registro criado ');
 
     entryForm.reset();
     currentEntryId = null;
@@ -163,7 +163,7 @@ window.deleteEntry = async (id) => {
   try {
     await fetch(`${API}/entries/${id}`, { method: 'DELETE' });
 
-    alert('Registro excluído 🗑️');
+    alert('Registro excluído ');
     loadEntries();
 
   } catch {
