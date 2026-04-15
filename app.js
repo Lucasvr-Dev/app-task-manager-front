@@ -63,22 +63,29 @@ cancelPet.addEventListener('click', () => {
 
 
 async function loadEntries() {
-  const res = await fetch(`${API}/entries`);
-  const entries = await res.json();
+  try {
+    const res = await fetch(`${API}/entries`);
+    const entries = await res.json();
 
-  entriesList.innerHTML = entries.map(e => `
-    <div class="entry-item">
-      <h5>${e.title}</h5>
-      <p>${new Date(e.happenedAt).toLocaleString()}</p>
-      <p>${e.description}</p>
-      <strong>Pet: ${e.petId?.name || 'N/A'}</strong>
+    console.log('ENTRIES:', entries);
 
-      <div class="mt-2 d-flex gap-2">
-        <button class="btn btn-warning btn-sm" onclick="editEntry('${e._id}')">Editar</button>
-        <button class="btn btn-danger btn-sm" onclick="deleteEntry('${e._id}')">Excluir</button>
+    if (!entries.length) {
+      entriesList.innerHTML = '<p>Nenhum registro encontrado.</p>';
+      return;
+    }
+
+    entriesList.innerHTML = entries.map(e => `
+      <div class="entry-item">
+        <h5>${e.title}</h5>
+        <p>${new Date(e.happenedAt).toLocaleString()}</p>
+        <p>${e.description}</p>
+        <strong>Pet: ${e.petId?.name || 'Sem pet'}</strong>
       </div>
-    </div>
-  `).join('');
+    `).join('');
+
+  } catch (err) {
+    console.error('Erro ao carregar entries:', err);
+  }
 }
 
 entryForm.addEventListener('submit', async (e) => {
