@@ -1,177 +1,79 @@
-const API = 'https://app-pet-back.onrender.com/api';
+const API = 'https://app-pet-back.onrender.com/api/tasks';
 
+const form = document.getElementById('task-form');
+const list = document.getElementById('list');
 
-const petForm = document.getElementById('pet-form');
-const petSelect = document.getElementById('pet-select');
+let editId = null;
 
-const entryForm = document.getElementById('entry-form');
-const entriesList = document.getElementById('entries-list');
-
-
-let currentEntryId = null;
-
-
-
-async function loadPets() {
+async function load() {
   try {
-    const res = await fetch(`${API}/pets`);
+    const res = await fetch(API);
+    const data = await res.json();
 
-    if (!res.ok) throw new Error();
-
-    const pets = await res.json();
-
-    if (!pets.length) {
-      petSelect.innerHTML = `<option disabled selected>Nenhum pet cadastrado</option>`;
+    if (!data.length) {
+      list.innerHTML = '<p>Nenhuma tarefa cadastrada.</p>';
       return;
     }
 
-    petSelect.innerHTML = pets.map(p =>
-      `<option value="${p._id}">${p.name}</option>`
-    ).join('');
+    list.innerHTML = data.map(t => `
+      <div class="task">
+        <div class="task-header">
+          <h3>${t.title}</h3>
+          <span class="status ${t.status}">${t.status}</span>
+        </div>
 
-  } catch (err) {
-    console.error(err);
-    petSelect.innerHTML = `<option disabled selected>Erro ao carregar pets</option>`;
-  }
-}
+        <p>${t.description || 'Sem descrição'}</p>
 
-
-
-petForm.addEventListener('submit', async (e) => {
-  e.preventDefault();
-
-  const data = {
-    name: document.getElementById('pet-name').value,
-    type: document.getElementById('pet-type').value,
-    age: document.getElementById('pet-age').value
-  };
-
-  try {
-    await fetch(`${API}/pets`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
-    });
-
-    alert('Pet criado com sucesso');
-
-    petForm.reset();
-    loadPets();
-
-  } catch {
-    alert('Erro ao criar pet');
-  }
-});
-
-
-
-async function loadEntries() {
-  try {
-    const res = await fetch(`${API}/entries`);
-
-    if (!res.ok) throw new Error();
-
-    const entries = await res.json();
-
-    if (!entries.length) {
-      entriesList.innerHTML = '<p>Nenhum registro encontrado.</p>';
-      return;
-    }
-
-    entriesList.innerHTML = entries.map(e => `
-      <div class="entry-item mb-3 p-2 border rounded">
-        <h5>${e.title}</h5>
-        <p>${new Date(e.happenedAt).toLocaleString()}</p>
-        <p>${e.description}</p>
-        <strong>Pet: ${e.petId?.name || 'Sem pet'}</strong>
-
-        <div class="mt-2 d-flex gap-2">
-          <button class="btn btn-warning btn-sm" onclick="editEntry('${e._id}')">Editar</button>
-          <button class="btn btn-danger btn-sm" onclick="deleteEntry('${e._id}')">Excluir</button>
+        <div class="task-actions">
+          <button onclick="edit('${t._id}')">Editar</button>
+          <button onclick="del('${t._id}')">Excluir</button>
         </div>
       </div>
     `).join('');
 
-  } catch (err) {
-    console.error(err);
-    entriesList.innerHTML = '<p>Erro ao carregar registros.</p>';
+  } catch {
+    list.innerHTML = '<p>Erro ao carregar tarefas.</p>';
   }
 }
 
-
-
-entryForm.addEventListener('submit', async (e) => {
+form.onsubmit = async (e) => {
   e.preventDefault();
 
   const data = {
-    title: document.getElementById('title').value,
-    description: document.getElementById('description').value,
-    happenedAt: document.getElementById('happenedAt').value,
-    petId: petSelect.value
+    title: title.value,
+    description: description.value,
+    status: status.value
   };
 
-  try {
-    const method = currentEntryId ? 'PUT' : 'POST';
-    const url = currentEntryId
-      ? `${API}/entries/${currentEntryId}`
-      : `${API}/entries`;
+  const method = editId ? 'PUT' : 'POST';
+  const url = editId ? `${API}/${editId}` : API;
 
-    await fetch(url, {
-      method,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
-    });
+  await fetch(url, {
+    method,
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  });
 
-    alert(currentEntryId ? 'Registro atualizado ' : 'Registro criado ');
-
-    entryForm.reset();
-    currentEntryId = null;
-
-    loadEntries();
-
-  } catch {
-    alert('Erro ao salvar registro');
-  }
-});
-
-
-
-window.editEntry = async (id) => {
-  try {
-    const res = await fetch(`${API}/entries/${id}`);
-    const e = await res.json();
-
-    currentEntryId = e._id;
-
-    document.getElementById('title').value = e.title;
-    document.getElementById('description').value = e.description;
-    document.getElementById('happenedAt').value =
-      new Date(e.happenedAt).toISOString().slice(0, 16);
-
-    petSelect.value = e.petId?._id;
-
-  } catch {
-    alert('Erro ao carregar registro');
-  }
+  form.reset();
+  editId = null;
+  load();
 };
 
+window.edit = async (id) => {
+  const res = await fetch(`${API}/${id}`);
+  const t = await res.json();
 
-
-window.deleteEntry = async (id) => {
-  if (!confirm('Deseja excluir este registro?')) return;
-
-  try {
-    await fetch(`${API}/entries/${id}`, { method: 'DELETE' });
-
-    alert('Registro excluído ');
-    loadEntries();
-
-  } catch {
-    alert('Erro ao excluir registro');
-  }
+  editId = t._id;
+  title.value = t.title;
+  description.value = t.description;
+  status.value = t.status;
 };
 
+window.del = async (id) => {
+  if (!confirm('Deseja excluir esta tarefa?')) return;
 
+  await fetch(`${API}/${id}`, { method: 'DELETE' });
+  load();
+};
 
-loadPets();
-loadEntries();
+load();
