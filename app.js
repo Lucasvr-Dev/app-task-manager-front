@@ -6,23 +6,23 @@ document.addEventListener("DOMContentLoaded", () => {
   const form = document.getElementById("task-form");
   const list = document.getElementById("list");
 
-  const titleInput = document.getElementById("title");
-  const descriptionInput = document.getElementById("description");
-  const statusSelect = document.getElementById("status");
-  const prioritySelect = document.getElementById("priority");
-  const dueDateInput = document.getElementById("dueDate");
+  const title = document.getElementById("title");
+  const description = document.getElementById("description");
+  const status = document.getElementById("status");
+  const priority = document.getElementById("priority");
+  const dueDate = document.getElementById("dueDate");
 
   async function load() {
     const res = await fetch(API);
     const data = await res.json();
+    const safe = Array.isArray(data) ? data : [];
 
-    list.innerHTML = data.map(t => `
-      <div class="task">
+    list.innerHTML = safe.map(t => `
+      <div>
         <h3>${t.title}</h3>
         <p>${t.description || ''}</p>
-
-        <p><strong>Status:</strong> ${t.status}</p>
-        <p><strong>Prioridade:</strong> ${t.priority}</p>
+        <p>${t.status}</p>
+        <p>${t.priority}</p>
 
         <button onclick="editTask('${t._id}')">Editar</button>
         <button onclick="deleteTask('${t._id}')">Excluir</button>
@@ -34,31 +34,27 @@ document.addEventListener("DOMContentLoaded", () => {
     e.preventDefault();
 
     const data = {
-      title: titleInput.value,
-      description: descriptionInput.value,
-      status: statusSelect.value,
-      priority: prioritySelect.value,
-      dueDate: dueDateInput.value || null
+      title: title.value,
+      description: description.value,
+      status: status.value,
+      priority: priority.value,
+      dueDate: dueDate.value || null
     };
-
-    console.log("ENVIANDO:", data);
 
     const url = editId ? `${API}/${editId}` : API;
     const method = editId ? "PUT" : "POST";
 
     await fetch(url, {
       method,
-      headers: {
-        "Content-Type": "application/json"
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data)
     });
 
     editId = null;
     form.reset();
 
-    prioritySelect.value = "media";
-    statusSelect.value = "pendente";
+    status.value = "pendente";
+    priority.value = "media";
 
     load();
   };
@@ -69,11 +65,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
     editId = id;
 
-    titleInput.value = t.title;
-    descriptionInput.value = t.description;
-    statusSelect.value = t.status;
-    prioritySelect.value = t.priority;
-    dueDateInput.value = t.dueDate
+    title.value = t.title;
+    description.value = t.description;
+    status.value = t.status;
+    priority.value = t.priority;
+
+    dueDate.value = t.dueDate
       ? new Date(t.dueDate).toISOString().slice(0, 16)
       : "";
   };
