@@ -20,10 +20,12 @@ document.addEventListener("DOMContentLoaded", () => {
   function formatarData(data) {
     if (!data) return "Sem data definida";
 
-    return new Date(data).toLocaleString("pt-BR", {
-      dateStyle: "short",
-      timeStyle: "short"
-    });
+    const limpa = data.replace("Z", "");
+    const [dataParte, horaCompleta] = limpa.split("T");
+    const [ano, mes, dia] = dataParte.split("-");
+    const hora = horaCompleta.slice(0, 5);
+
+    return `${dia}/${mes}/${ano}, ${hora}`;
   }
 
   async function load() {
@@ -32,7 +34,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const tarefas = Array.isArray(data) ? data : [];
 
-    list.innerHTML = tarefas.map(t => `
+    list.innerHTML = tarefas.map((t) => `
       <div class="task-card ${t.priority}">
         <h3>${t.title}</h3>
 
@@ -90,10 +92,7 @@ document.addEventListener("DOMContentLoaded", () => {
     description.value = t.description || "";
     status.value = t.status || "pendente";
     priority.value = t.priority || "media";
-
-    dueDate.value = t.dueDate
-      ? new Date(t.dueDate).toISOString().slice(0, 16)
-      : "";
+    dueDate.value = t.dueDate ? t.dueDate.slice(0, 16) : "";
   };
 
   window.deleteTask = async (id) => {

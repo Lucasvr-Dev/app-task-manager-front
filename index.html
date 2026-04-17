@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <title>Gerenciador de Tarefas</title>
-  <link rel="icon" type="image/png" href="icons/favicon.ico">
 
   <meta
     name="description"
@@ -13,69 +12,92 @@
   />
 
   <meta name="theme-color" content="#22c55e" />
+  <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta
+    name="apple-mobile-web-app-status-bar-style"
+    content="black-translucent"
+  />
 
   <link rel="manifest" href="manifest.json" />
+  <link rel="icon" type="image/png" href="icons/favicon.ico" />
+
+  <link rel="preload" href="style.css" as="style" />
   <link rel="stylesheet" href="style.css" />
 
   <script src="app.js" defer></script>
 
   <script>
     if ("serviceWorker" in navigator) {
-      window.addEventListener("load", () => {
-        navigator.serviceWorker.register("./service-worker.js")
-          .then(() => console.log("PWA ativo"))
-          .catch((error) => console.log("Erro SW:", error));
-      });
+      navigator.serviceWorker
+        .register("./service-worker.js")
+        .then(() => console.log("PWA ativo"))
+        .catch((error) => console.log("Erro SW:", error));
     }
   </script>
 </head>
 
 <body>
-  <div class="container">
+  <main>
+    <div class="container">
 
-    <h1>Gerenciador de Tarefas</h1>
+      <h1>Gerenciador de Tarefas</h1>
 
-    <div class="card">
-      <form id="task-form">
+      <div class="card">
+        <form id="task-form">
 
-        <input
-          id="title"
-          placeholder="Título da tarefa"
-          required
-        />
+          <label for="title" class="sr-only">Título da tarefa</label>
+          <input
+            id="title"
+            name="title"
+            placeholder="Título da tarefa"
+            required
+            autofocus
+          />
 
-        <textarea
-          id="description"
-          placeholder="Descrição da tarefa"
-        ></textarea>
+          <label for="description" class="sr-only">Descrição da tarefa</label>
+          <textarea
+            id="description"
+            name="description"
+            placeholder="Descrição da tarefa"
+          ></textarea>
 
-        <select id="status">
-          <option value="pendente">Pendente</option>
-          <option value="concluido">Concluído</option>
-        </select>
+          <label for="status" class="sr-only">Status da tarefa</label>
+          <select id="status" name="status">
+            <option value="pendente">Pendente</option>
+            <option value="concluido">Concluído</option>
+          </select>
 
-        <select id="priority">
-          <option value="baixa">Baixa</option>
-          <option value="media" selected>Média</option>
-          <option value="alta">Alta</option>
-        </select>
+          <label for="priority" class="sr-only">Prioridade da tarefa</label>
+          <select id="priority" name="priority">
+            <option value="baixa">Baixa</option>
+            <option value="media" selected>Média</option>
+            <option value="alta">Alta</option>
+          </select>
 
-        <input type="datetime-local" id="dueDate" />
+          <label for="dueDate" class="sr-only">Data e horário limite</label>
+          <input
+            type="datetime-local"
+            id="dueDate"
+            name="dueDate"
+          />
 
-        <button type="submit">
-          Salvar Tarefa
-        </button>
+          <button
+            type="submit"
+            aria-label="Salvar tarefa"
+          >
+            Salvar Tarefa
+          </button>
 
-      </form>
+        </form>
+      </div>
+
+      <div class="card">
+        <h2>Minhas Tarefas</h2>
+        <div id="list"></div>
+      </div>
+
     </div>
-
-    <div class="card">
-      <h2>Minhas Tarefas</h2>
-      <div id="list"></div>
-    </div>
-
-  </div>
+  </main>
 </body>
 </html>
